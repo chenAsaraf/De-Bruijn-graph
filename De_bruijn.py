@@ -1,5 +1,6 @@
-# Python program print Eulerian Trail in a given Eulerian or Semi-Eulerian Graph
+# Python program print Eulerian Trail in a given De Bruijn Graph
 # https://www.geeksforgeeks.org/fleurys-algorithm-for-printing-eulerian-path/
+# http://www.graph-magics.com/articles/euler.php
 
 from collections import defaultdict
 
