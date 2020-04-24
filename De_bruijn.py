@@ -25,8 +25,14 @@ class Graph:
                 self.in_degrees[read[length - k + 1:]] += 1
             else:
                 self.in_degrees[read[length - k + 1:]] = 1
+        # last right k-1-mer maybe doesn't already exist in graph vertices
+        # (the keys in 'edges'). then it should be inserted though the value of it
+        # will be empty-list (no edge coming out)
         last_read = listOfReads[len(listOfReads) - 1]
-        self.edges[last_read[length - k + 1:]].append([])
+        last_k_mer = last_read[length - k + 1:]
+        if not last_k_mer in self.edges:
+            self.edges[last_k_mer] = []
+
 
 
     def printGraph(self):
@@ -45,12 +51,13 @@ class Graph:
             else: # If current has another out edges
                 stack.append(current)
                 current = edges_copy[current].pop(0)
-            if stack.empty() and len(edges_copy[current]) == 0:
+            if len(stack) == 0 and len(edges_copy[current]) == 0:
                 break
+        trail.append(current) # the last in te stack
         return trail
 
 
-    def EulerianTrail(self):
+    def __EulerianTrail(self):
         """
         Start with an empty stack and an empty circuit (eulerian path).
         - If all vertices have same out-degrees as in-degrees - choose any of them.
@@ -62,11 +69,9 @@ class Graph:
         :return:
         """
         neq_deg = [] # holders for not-equal degrees vertices
-        exist_eulerian = True
         for k , v in self.edges.items():
             if len(v) != self.in_degrees[k]: # If have same out-degree as in-degree
                 if len(neq_deg) > 2:
-                    exist_eulerian = False
                     break
                 neq_deg.append(k)
         number_neq = len(neq_deg)
@@ -76,18 +81,43 @@ class Graph:
         elif number_neq == 2:
             for i in neq_deg:
                 #  out degree = in degree + 1
-                if len(self.edges[i]) == len(self.in_degrees[i]) + 1:
+                if len(self.edges[i]) == self.in_degrees[i] + 1:
                     start = i
                 #  out degree + 1 = in degree
-                elif len(self.edges[i]) + 1 == len(self.in_degrees[i]):
+                elif len(self.edges[i]) + 1 == self.in_degrees[i]:
                     end = i
             if start is not None and end is not None:
-                return self.FindEulerian(start, end)
-            # if not exist_eulerian: return False
+                return self.__FindEulerian(start, end)
         else: return False
 
+    def assembly(self):
+        """ This method calls EulerianTrail method
+        Which returns a list of all vertices in the Eulerian trail in reverse order.
+        The method restores the DNA in the following naive form:
+        The overlap between 2 k-1-mers (vertices) is k-2 basic long.
+        We will take from all the strings (vertices) except the last the first basis (char)
+        and concat them together. The last string will be joined in its entirety.
+        :return:
+        """
+        reversed_trail = self.__EulerianTrail()
+        dna = ""
+        for idx, v in enumerate(reversed(reversed_trail)):
+            if idx != len(reversed_trail) -1:
+                dna += v[0:1]
+            else:
+                dna += v
+        return dna
 
-# Create a graph given in the above diagram
+    def isEqualTest(self, OriginDNA, assembleDNA):
+        return OriginDNA == assembleDNA
+
+
+
+# --------------------------------------------
+#               TESTS
+# --------------------------------------------
+
+print("--------------------------------------------")
 originDNA = "AGCTGACCCGTT"
 k = 4
 reads_list = []
@@ -95,5 +125,39 @@ for i in range(len(originDNA)-k + 1):
     reads_list.append(originDNA[i:i+k])
 print("Reads: " , str(reads_list))
 g1 = Graph(reads_list, k)
-g1.printGraph()
-print(g1.EulerianTrail())
+# g1.printGraph()
+assembledDNA = g1.assembly()
+print("Origin DNA:   " , originDNA)
+print("Assembled DNA:" , assembledDNA)
+print("Is the naive assembly works good? ", g1.isEqualTest(originDNA, assembledDNA))
+
+
+print("--------------------------------------------")
+originDNA = "AAAAAGCGCGCGCG"
+k = 4
+reads_list = []
+for i in range(len(originDNA)-k + 1):
+    reads_list.append(originDNA[i:i+k])
+print("Reads: " , str(reads_list))
+g1 = Graph(reads_list, k)
+# g1.printGraph()
+assembledDNA = g1.assembly()
+print("Origin DNA:   " , originDNA)
+print("Assembled DNA:" , assembledDNA)
+print("Is the naive assembly works good? ", g1.isEqualTest(originDNA, assembledDNA))
+
+
+print("--------------------------------------------")
+originDNA = "AAAGGCGCACGCTACGTACGTTTT"
+k = 8
+reads_list = []
+for i in range(len(originDNA)-k + 1):
+    reads_list.append(originDNA[i:i+k])
+print("Reads: " , str(reads_list))
+g1 = Graph(reads_list, k)
+# g1.printGraph()
+assembledDNA = g1.assembly()
+print("Origin DNA:   " , originDNA)
+print("Assembled DNA:" , assembledDNA)
+print("Is the naive assembly works good? ", g1.isEqualTest(originDNA, assembledDNA))
+
