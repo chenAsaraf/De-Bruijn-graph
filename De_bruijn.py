@@ -1,9 +1,13 @@
-# Python program print Eulerian Trail in a given De Bruijn Graph
-# https://www.geeksforgeeks.org/fleurys-algorithm-for-printing-eulerian-path/
-# http://www.graph-magics.com/articles/euler.php
-
+"""
+ Python program for DNA De-Novo assembly
+ This naive implementation based on De-Bruijn graph algorithm.
+ The Constructor of the graph takes a list of DNA k-mers (reads)
+ and produces 2 vertices from each k-mers: right k-1 mer and left k-1 mer.
+ To recover the genome, find the Eulerian trail in the graph and reassemble the DNA.
+https://www.geeksforgeeks.org/fleurys-algorithm-for-printing-eulerian-path/
+http://www.graph-magics.com/articles/euler.php
+"""
 from collections import defaultdict
-
 
 # This class represents an undirected graph using adjacency list representation
 class Graph:
